@@ -1,0 +1,8 @@
+{
+  "name": "Classmate AI",
+  "description": "Your playful, top-of-the-class learning companion that helps you master your specific course material through chat, images, and voice.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
