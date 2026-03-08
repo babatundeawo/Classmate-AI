@@ -11,7 +11,9 @@ import {
   Bot,
   Paperclip,
   RotateCcw,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Check
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkMath from 'remark-math';
@@ -38,6 +40,7 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [copyingId, setCopyingId] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -157,7 +160,7 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-stone-100 max-w-4xl mx-auto border-x-4 border-stone-200 shadow-2xl">
+    <div className="flex flex-col h-[100dvh] bg-stone-100 max-w-4xl mx-auto sm:border-x-4 border-stone-200 shadow-2xl overflow-hidden">
       {/* Header */}
       <header className="bg-white border-b-4 border-stone-200 p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -186,25 +189,39 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
       {/* Chat Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-6 notebook-paper"
+        className="flex-1 overflow-y-auto p-2 sm:p-6 space-y-4 sm:space-y-6 notebook-paper"
       >
         {messages.map((msg, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[85%] flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center border-2 border-stone-800 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${msg.role === 'user' ? 'bg-student-blue' : 'bg-student-yellow'}`}>
-                {msg.role === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4" />}
+            <div className={`flex gap-1.5 sm:gap-3 w-full ${msg.role === 'user' ? 'flex-row-reverse pl-4 sm:pl-12' : 'flex-row pr-4 sm:pr-12'}`}>
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex-shrink-0 flex items-center justify-center border-2 border-stone-800 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${msg.role === 'user' ? 'bg-student-blue' : 'bg-student-yellow'}`}>
+                {msg.role === 'user' ? <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" /> : <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </div>
-              <div className={`p-4 rounded-2xl border-2 border-stone-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${msg.role === 'user' ? 'bg-white' : 'bg-stone-50'}`}>
+              <div className={`group relative flex-1 p-3 sm:p-4 rounded-2xl border-2 border-stone-800 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${msg.role === 'user' ? 'bg-white' : 'bg-stone-50'}`}>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(msg.text);
+                    setCopyingId(i.toString());
+                    setTimeout(() => setCopyingId(null), 2000);
+                  }}
+                  className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur rounded-lg opacity-0 group-hover:opacity-100 transition-opacity border border-stone-200 shadow-sm z-10"
+                  title="Copy message"
+                >
+                  {copyingId === i.toString() ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-stone-500" />}
+                </button>
                 {msg.image && (
                   <img src={msg.image} alt="Attached" className="max-w-full rounded-lg mb-3 border-2 border-stone-200" referrerPolicy="no-referrer" />
                 )}
-                <div className="markdown-body prose prose-stone max-w-none">
-                  <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                <div className="markdown-body prose prose-stone max-w-none text-sm sm:text-base leading-relaxed">
+                  <Markdown 
+                    remarkPlugins={[remarkMath]} 
+                    rehypePlugins={[rehypeKatex]}
+                  >
                     {msg.text}
                   </Markdown>
                 </div>
@@ -213,9 +230,23 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
           </motion.div>
         ))}
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-stone-200 animate-pulse h-8 w-24 rounded-full" />
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-start gap-2 items-center"
+          >
+            <div className="w-7 h-7 rounded-full bg-student-yellow flex items-center justify-center border-2 border-stone-800 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+              <Bot className="w-3.5 h-3.5" />
+            </div>
+            <div className="bg-stone-200 px-4 py-2 rounded-2xl border-2 border-stone-300 flex items-center gap-1">
+              <span className="text-xs font-bold text-stone-500">Alex is writing</span>
+              <span className="flex gap-0.5">
+                <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-1 h-1 bg-stone-400 rounded-full" />
+                <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 h-1 bg-stone-400 rounded-full" />
+                <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1 h-1 bg-stone-400 rounded-full" />
+              </span>
+            </div>
+          </motion.div>
         )}
       </div>
 
@@ -241,6 +272,14 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
         </AnimatePresence>
 
         <div className="flex items-end gap-2">
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="p-3 bg-stone-100 hover:bg-stone-200 rounded-2xl border-2 border-stone-200 transition-colors text-stone-500"
+            title="Attach File"
+          >
+            <Paperclip className="w-6 h-6" />
+          </button>
+          
           <div className="flex-1 bg-stone-100 rounded-2xl border-2 border-stone-200 p-2 flex flex-col">
             <textarea
               rows={1}
@@ -256,13 +295,6 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
               className="bg-transparent border-none focus:ring-0 resize-none p-2 w-full max-h-32 overflow-y-auto"
             />
             <div className="flex items-center gap-2 mt-2 border-t border-stone-200 pt-2 px-2">
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 hover:bg-stone-200 rounded-lg transition-colors text-stone-500"
-                title="Upload Image"
-              >
-                <ImageIcon className="w-5 h-5" />
-              </button>
               <button 
                 onClick={startCamera}
                 className="p-2 hover:bg-stone-200 rounded-lg transition-colors text-stone-500"

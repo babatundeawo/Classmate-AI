@@ -223,7 +223,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-stone-100">
+    <div className="min-h-[100dvh] flex items-center justify-center p-4 bg-stone-100 overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

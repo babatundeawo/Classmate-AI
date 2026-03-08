@@ -12,7 +12,7 @@
 
 @layer base {
   body {
-    @apply bg-stone-100 text-stone-900;
+    @apply bg-stone-100 text-stone-900 overflow-hidden h-[100dvh];
   }
 }
 
@@ -21,10 +21,16 @@
   background-image: linear-gradient(var(--color-notebook-line) 1px, transparent 1px);
   background-size: 100% 2rem;
   line-height: 2rem;
+  background-attachment: local;
 }
 
 .markdown-body p {
   @apply mb-4;
+}
+
+/* Ensure KaTeX fonts and styles are applied */
+.markdown-body .katex {
+  font-size: 1.1em;
 }
 
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
@@ -33,4 +39,9 @@
 
 .markdown-body ul {
   @apply list-disc ml-6 mb-4;
+}
+
+/* KaTeX Math Overflow */
+.katex-display {
+  @apply overflow-x-auto overflow-y-hidden py-2;
 }
