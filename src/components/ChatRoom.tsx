@@ -13,7 +13,8 @@ import {
   RotateCcw,
   AlertCircle,
   Copy,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkMath from 'remark-math';
@@ -40,6 +41,7 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [copyingId, setCopyingId] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -177,13 +179,22 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
             </p>
           </div>
         </div>
-        <button 
-          onClick={() => setShowResetConfirm(true)}
-          className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-500"
-          title="Change Subject"
-        >
-          <RotateCcw className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => setShowClearConfirm(true)}
+            className="p-2 hover:bg-red-50 rounded-lg transition-colors text-stone-400 hover:text-red-500"
+            title="Clear Chat"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => setShowResetConfirm(true)}
+            className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-500"
+            title="Change Subject"
+          >
+            <RotateCcw className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       {/* Chat Area */}
@@ -394,6 +405,57 @@ export default function ChatRoom({ context, onReset }: ChatRoomProps) {
                   className="flex-1 py-3 rounded-xl font-bold bg-red-500 text-white shadow-lg shadow-red-200 hover:bg-red-600 transition-all active:scale-95"
                 >
                   Yes, change am
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Clear Chat Confirmation Dialog */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border-4 border-stone-200"
+            >
+              <div className="flex items-center gap-4 mb-6 text-red-500">
+                <div className="bg-red-100 p-3 rounded-2xl">
+                  <Trash2 className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold text-stone-800">Clear Chat?</h3>
+              </div>
+              <p className="text-stone-600 mb-8 leading-relaxed">
+                You wan clear all the messages wey we don talk? You no go fit see them again o!
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 py-3 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors"
+                >
+                  No, leave am
+                </button>
+                <button
+                  onClick={() => {
+                    setMessages([
+                      { 
+                        role: 'model', 
+                        text: `Hey! I'm Alex. Ready to crush ${context.subject}? I've got all the notes on ${context.topic} right here. What's tripping you up?` 
+                      }
+                    ]);
+                    setShowClearConfirm(false);
+                  }}
+                  className="flex-1 py-3 rounded-xl font-bold bg-red-500 text-white shadow-lg shadow-red-200 hover:bg-red-600 transition-all active:scale-95"
+                >
+                  Yes, clear am
                 </button>
               </div>
             </motion.div>
